@@ -1,0 +1,140 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "provenance": [],
+      "authorship_tag": "ABX9TyOVXHkEuPtj0QnBmTXGZCUD"
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "code",
+      "execution_count": null,
+      "metadata": {
+        "id": "HBi5Pk3PaFAb"
+      },
+      "outputs": [],
+      "source": [
+        "!pip install langchain_community\n",
+        "!pip install replicate"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "from langchain_community.llms import Replicate\n",
+        "import os\n",
+        "from google.colab import userdata\n",
+        "# Set the API token\n",
+        "api_token = userdata.get('api_token')\n",
+        "os.environ[\"REPLICATE_API_TOKEN\"] = api_token\n",
+        "# Model setup\n",
+        "model = \"ibm-granite/granite-3.3-8b-instruct\"\n",
+        "output = Replicate(\n",
+        "model=model,\n",
+        "replicate_api_token=api_token,\n",
+        ")"
+      ],
+      "metadata": {
+        "id": "aOh3xVmMbxY6"
+      },
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define the customer reviews\n",
+        "customer_reviews = [\n",
+        "\"The battery lasts all day, and the performance is excellent.\",\n",
+        "\"The screen is too dim outdoors, but I love the colors indoors.\",\n",
+        "\"This phone is slow and keeps crashing when I open certain apps.\"\n",
+        "]\n",
+        "# Refine the prompt to include reviews\n",
+        "reviews_text = \"\\n\".join([f\"Review {i+1}: {review}\" for i, review\n",
+        "in enumerate(customer_reviews)])\n",
+        "prompt = f\"\"\"\n",
+        "Classify these reviews as Positive, Negative, or Mixed:\n",
+        "{reviews_text}\n",
+        "\"\"\"\n",
+        "# Invoke the model with the example prompt\n",
+        "response = output.invoke(prompt)\n",
+        "# Print the response\n",
+        "print(\"Granite Model Response:\\n\")\n",
+        "print(response)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "raSa-8Fjc8O5",
+        "outputId": "e084f5cb-8465-48ac-b4be-93088d1cfbea"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Granite Model Response:\n",
+            "\n",
+            "1. Positive: The review expresses satisfaction with both the battery life and performance.\n",
+            "2. Mixed: This review presents both a criticism (the screen being too dim outdoors) and a compliment (the colors being great indoors).\n",
+            "3. Negative: The review conveys dissatisfaction with the phone's speed and stability, mentioning that it is slow and crashes when opening certain apps.\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "source": [
+        "# Define refined prompt\n",
+        "refined_prompt = f\"\"\"\n",
+        "Classify these reviews as positive, negative, or mixed, and tag\n",
+        "relevant categories (battery life, screen quality, or\n",
+        "performance):\n",
+        "{reviews_text}\n",
+        "\"\"\"\n",
+        "# Invoke the model with the example prompt\n",
+        "response = output.invoke(refined_prompt)\n",
+        "# Print the response\n",
+        "print(\"Granite Model Refined Response:\\n\")\n",
+        "print(response)"
+      ],
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "wTIDkhtjeFmZ",
+        "outputId": "b8207761-3ea3-4461-b9b8-8c204fb29262"
+      },
+      "execution_count": null,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Granite Model Refined Response:\n",
+            "\n",
+            "1. Review 1: Positive, Performance, Battery Life\n",
+            "- This review is positive as the user expresses satisfaction with both the battery life (\"lasts all day\") and performance (\"excellent\").\n",
+            "\n",
+            "2. Review 2: Mixed, Screen Quality\n",
+            "- This review is mixed. The user is dissatisfied with the screen's dimness outdoors but appreciates the color quality indoors. The relevant category is screen quality.\n",
+            "\n",
+            "3. Review 3: Negative, Performance\n",
+            "- This review is negative due to the user's dissatisfaction with the phone's slow performance and frequent crashing when opening certain apps. The relevant category is performance.\n"
+          ]
+        }
+      ]
+    }
+  ]
+}
